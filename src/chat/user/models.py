@@ -6,6 +6,7 @@ from marshmallow import Schema, fields
 
 from chat.user import user_mongo
 from chat.user.Exceptions import UserDoesNotExists
+from chat.user.utils import get_hash
 
 
 class UserSchema(Schema):
@@ -17,6 +18,7 @@ class UserSchema(Schema):
     last_name = fields.String(required=True)
     created = fields.Float(required=True)
     is_active = fields.Boolean()
+    password = fields.String(required=True)
 
 
 class User:
@@ -31,6 +33,7 @@ class User:
         self.last_name: str = kwargs.get('last_name')
         self.created: float = kwargs.get('created', time.time())
         self.is_active = kwargs.get('is_active', True)
+        self.password = kwargs.get('password')
 
     def __str__(self) -> str:
         return f'id:{self._id}, email:{self.email}'
@@ -64,3 +67,10 @@ class User:
             raise UserDoesNotExists
         return cls(**schema.load(data).data)
 
+    def set_password(self, raw_password):
+        """Set password for user"""
+        self.password = get_hash(raw_password)
+
+    def check_password(self, raw_password):
+        """check password for user"""
+        return self.password == get_hash(raw_password)

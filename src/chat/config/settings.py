@@ -14,6 +14,7 @@ else:
     env.read_envfile(env_file_path)
 
 DEBUG = env.bool('DEBUG', default=False)
+SECRET_KEY = env.str('SECRET_KEY', default='')
 
 SITE_HOST = env.str('SITE_HOST', default='localhost')
 SITE_PORT = env.int('SITE_PORT', default=8888)
