@@ -4,6 +4,7 @@ echo "deb http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.2 multiverse" 
 sudo apt-get update
 sudo apt-get install -y mongodb-org
 sudo cp mongodb.service /etc/systemd/system/mongodb.service
+sudo systemctl daemon-reload
 sudo systemctl start mongodb
 sudo systemctl enable mongodb
 
@@ -15,6 +16,7 @@ sudo pip install -U setuptools
 sudo pip install -U virtualenv
 virtualenv env 
 
+echo "sudo service mongod start" >> /home/ubuntu/.profile
 echo "cd /vagrant" >> /home/ubuntu/.profile
 echo "source /home/ubuntu/env/bin/activate" >> /home/ubuntu/.profile
 
