@@ -3,3 +3,5 @@ motor==1.1
 uvloop==0.8.1
 envparse==0.2.0
 marshmallow==2.13.6
+aiohttp-jinja2==0.14.0
+Jinja2==2.9.6
