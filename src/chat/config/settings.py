@@ -1,5 +1,6 @@
 import os
 import logging
+import pathlib
 import warnings
 
 from envparse import env
@@ -27,3 +28,7 @@ MONGO_DB_NAME = env.str('MONGO_DB_NAME', default='chat')
 MONGO_MESSAGE_COLLECTION = env.str('MESSAGE_COLLECTION', default='messages')
 MONGO_USER_COLLECTION = env.str('USER_COLLECTION', default='users')
 
+_base_dir = pathlib.Path(__file__).parent.parent
+BASE_DIR = str(_base_dir)
+STATIC_DIR = str(_base_dir.joinpath(env.str('STATIC', default='static')))
+TEMPLATES_DIR = str(_base_dir.joinpath(env.str('TEMPLATES', default='templates')))
