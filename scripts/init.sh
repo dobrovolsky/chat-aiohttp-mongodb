@@ -18,5 +18,5 @@ virtualenv env
 
 echo "sudo service mongod start" >> /home/ubuntu/.profile
 echo "cd /vagrant" >> /home/ubuntu/.profile
-echo "source /home/ubuntu/env/bin/activate" >> /home/ubuntu/.profile
+echo "source /vagrant/env/bin/activate" >> /home/ubuntu/.profile
 

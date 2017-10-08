@@ -1,3 +1,6 @@
 class UserDoesNotExists(Exception):
     """Exception for User"""
-    pass
+
+
+class UserValidationError(Exception):
+    """Exception for User"""
