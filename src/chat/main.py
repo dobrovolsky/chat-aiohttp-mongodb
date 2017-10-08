@@ -10,6 +10,7 @@ from chat.config import setup_routes, settings
 
 asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 logger = settings.log
+loop = asyncio.get_event_loop()
 
 if __name__ == '__main__':
     app = web.Application(debug=settings.DEBUG)
