@@ -6,13 +6,12 @@ from chat.views import ChatSocketView, ChatView
 
 def setup_routes(app: Application):
     """Set up routers"""
-    from chat.auth.views import SignUp
+    from chat.auth.views import SignUpView, SignInView
     routers = [
         ('GET', '/chat', ChatView, 'chat'),
         ('GET', '/chat/ws', ChatSocketView, 'chat_ws'),
-        ('*', '/signup', SignUp, 'signup'),
-        # ('*',   '/login',   Login, 'login'),
-        # ('*',   '/signin',  SignIn, 'signin'),
+        ('*', '/signup', SignUpView, 'signup'),
+        ('*',   '/signin',  SignInView, 'signin'),
         # ('*',   '/signout', SignOut, 'signout'),
     ]
     for route in routers:

@@ -32,3 +32,7 @@ _base_dir = pathlib.Path(__file__).parent.parent
 BASE_DIR = str(_base_dir)
 STATIC_DIR = str(_base_dir.joinpath(env.str('STATIC', default='static')))
 TEMPLATES_DIR = str(_base_dir.joinpath(env.str('TEMPLATES', default='templates')))
+
+REDIS_HOST = env.str('REDIS_HOST', default='localhost')
+REDIS_PORT = env.int('REDIS_PORT', default=6379)
+REDIS_DB = env.int('REDIS_DB', default=0)

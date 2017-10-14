@@ -5,3 +5,4 @@ envparse==0.2.0
 marshmallow==2.13.6
 aiohttp-jinja2==0.14.0
 Jinja2==2.9.6
+aiohttp_session[aioredis]==1.0.1
