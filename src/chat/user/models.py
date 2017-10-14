@@ -77,12 +77,13 @@ class User:
             self.id = result.inserted_id
 
     @classmethod
-    async def get_user(cls, _id) -> 'User':
+    async def get_user(cls, **filters) -> 'User':
         """Get user data from db"""
-        data = await collection.find_one({'_id': _id})
+        data = await collection.find_one(filters)
         schema = UserSchema()
         if schema.load(data).data is None:
             raise UserDoesNotExists
+        data['_id'] = str(data['_id'])
         return cls(**schema.load(data).data)
 
     def set_password(self, raw_password):

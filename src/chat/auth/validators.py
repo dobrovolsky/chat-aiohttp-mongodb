@@ -1,19 +1,6 @@
-from marshmallow import Schema, fields
-
 from chat.common.validators import BaseValidator
-from chat.user.utils import basic_string_validation, is_email_exists_in_db
-
-
-class UserSingUpValidatorSchema(Schema):
-    """Serializer/Deserializer of User instance"""
-    email = fields.Email(required=True)
-    first_name = fields.String(required=True, validate=lambda n: basic_string_validation(n, min_length=5,
-                                                                                         max_length=50))
-    last_name = fields.String(required=True,
-                              validate=lambda n: basic_string_validation(n, min_length=5, max_length=50))
-    password1 = fields.String(required=True, validate=lambda n: basic_string_validation(n, min_length=6, max_length=50))
-    password2 = fields.String(required=True, validate=lambda n: basic_string_validation(n, min_length=6, max_length=50))
-
+from chat.user.utils import is_email_exists_in_db
+from chat.auth.schemas import UserSingUpValidatorSchema, UserSingInValidatorSchema
 
 class UserSingUpValidator(BaseValidator):
     """provide sing up validation"""
@@ -45,3 +32,12 @@ class UserSingUpValidator(BaseValidator):
             'last_name': self.last_name,
             'password': self.password1,
         }
+
+class UserSingInValidator(BaseValidator):
+    """provide sing in validation"""
+    _schema = UserSingInValidatorSchema()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__()
+        self.email = kwargs.get('email')
+        self.password = kwargs.get('password')
