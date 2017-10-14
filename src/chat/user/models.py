@@ -2,13 +2,12 @@ import json
 import uuid
 
 import time
-from marshmallow import Schema, fields, ValidationError
+from marshmallow import Schema, fields
 
 from chat.user.Exceptions import UserDoesNotExists, UserValidationError
-from chat.user.utils import get_hash, message_collection
+from chat.user.utils import get_hash, get_message_collection, basic_string_validation
 
-
-collection = message_collection()
+collection = get_message_collection()
 
 
 class UserSchema(Schema):
@@ -16,24 +15,13 @@ class UserSchema(Schema):
     _id = fields.String()
     uuid = fields.UUID(required=True)
     email = fields.Email(required=True)
-    first_name = fields.String(required=True, validate=lambda n: basic_string_validation(n, min_length=5,
-                                                                                         max_length=50))
-    last_name = fields.String(required=True, validate=lambda n: basic_string_validation(n, min_length=5, max_length=50))
+    first_name = fields.String(required=True, validate=lambda n: basic_string_validation(n, min_length=2,
+                                                                                         max_length=100))
+    last_name = fields.String(required=True, validate=lambda n: basic_string_validation(n, min_length=2,
+                                                                                        max_length=100))
     created = fields.Float(required=True)
     is_active = fields.Boolean()
     password = fields.String(required=True)
-
-
-def basic_string_validation(value, min_length=None, max_length=None, blank=False):
-    """Provide basic validation for string"""
-    if not isinstance(value, str):
-        raise ValidationError('should be a string')
-    if min_length and len(value) < min_length:
-        raise ValidationError(f'string should be longer than {min_length}')
-    if max_length and len(value) > max_length:
-        raise ValidationError(f'string should be shorter than {max_length}')
-    if not blank and not value:
-        raise ValidationError(f'string should not be blank')
 
 
 class User:
@@ -56,11 +44,9 @@ class User:
     def __str__(self) -> str:
         return f'id:{self._id}, email:{self.email}'
 
-    async def is_valid(self, check_email=False) -> bool:
+    async def is_valid(self) -> bool:
         """check object validation"""
         self.errors = self._validate()
-        if check_email and not self.errors and await self.is_email_exists_in_db():
-            self.errors.update({'email': 'Email already exists'})
         return not bool(self.errors)
 
     def _validate(self) -> dict:
@@ -86,6 +72,7 @@ class User:
             user_id = data.pop('_id')
             await collection.replace_one({'_id': user_id}, data)
         else:
+            self.set_password(self.password)
             result = await collection.insert_one(self.loads())
             self.id = result.inserted_id
 
@@ -97,11 +84,6 @@ class User:
         if schema.load(data).data is None:
             raise UserDoesNotExists
         return cls(**schema.load(data).data)
-
-    async def is_email_exists_in_db(self) -> bool:
-        """Check email in db"""
-        data = await collection.find_one({'email': self.email})
-        return bool(data)
 
     def set_password(self, raw_password):
         """Set password for user"""

@@ -2,6 +2,7 @@ import aiohttp_jinja2
 from aiohttp import web
 
 from chat.user.models import User
+from chat.user.validators import UserSingUpValidator
 
 
 class SignUp(web.View):
@@ -15,9 +16,11 @@ class SignUp(web.View):
     async def post(self):
         """create new user"""
         data = await self.request.post()
-        user = User(**data)
-        if await user.is_valid(check_email=True):
+        user_data = UserSingUpValidator(**data)
+        if await user_data.is_valid():
+            user = User(**user_data.get_data())
+            await user.is_valid()
             await user.save()
         else:
-            return web.json_response(data=user.errors, status=400)
+            return web.json_response(data=user_data.errors, status=400)
         return web.json_response(data={}, status=201)
