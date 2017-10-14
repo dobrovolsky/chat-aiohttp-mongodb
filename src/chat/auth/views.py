@@ -34,7 +34,7 @@ class SignInView(web.View):
 
     @aiohttp_jinja2.template('login.html')
     async def get(self):
-        """render template with sign up form"""
+        """render template with sign in form"""
         session = await get_session(self.request)
         context = {}
         if session.get('user_id'):
@@ -42,7 +42,7 @@ class SignInView(web.View):
         return context
 
     async def post(self):
-        """create new user"""
+        """login user to site"""
         data = await self.request.post()
         session = await get_session(self.request)
         user_data = UserSingInValidator(**data)
