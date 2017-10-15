@@ -31,4 +31,4 @@ class ChatView(web.View):
 
     @aiohttp_jinja2.template('chat.html')
     async def get(self):
-        return {'name': 'Andrew', 'surname': 'Svetlov'}
+        return {'user': self.request.user}

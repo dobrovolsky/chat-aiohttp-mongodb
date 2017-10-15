@@ -1,11 +1,11 @@
 import json
+import time
 import uuid
 
-import time
+from user.Exceptions import UserDoesNotExists, UserValidationError
 from marshmallow import Schema, fields
 
-from chat.user.Exceptions import UserDoesNotExists, UserValidationError
-from chat.user.utils import get_hash, get_message_collection, basic_string_validation
+from user.utils import get_hash, get_message_collection, basic_string_validation
 
 collection = get_message_collection()
 
