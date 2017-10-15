@@ -1,9 +1,9 @@
 import hashlib
+from main import loop
 from marshmallow.exceptions import ValidationError
 from motor import motor_asyncio
 
-from chat.config import settings
-from chat.main import loop
+from config import settings
 
 
 def get_hash(pswd):

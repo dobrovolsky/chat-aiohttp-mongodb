@@ -1,6 +1,8 @@
-from chat.common.validators import BaseValidator
-from chat.user.utils import is_email_exists_in_db
-from chat.auth.schemas import UserSingUpValidatorSchema, UserSingInValidatorSchema
+from auth.schemas import UserSingUpValidatorSchema, UserSingInValidatorSchema
+from common.validators import BaseValidator
+
+from user.utils import is_email_exists_in_db
+
 
 class UserSingUpValidator(BaseValidator):
     """provide sing up validation"""

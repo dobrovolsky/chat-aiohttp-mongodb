@@ -1,12 +1,12 @@
 from aiohttp.web import Application
-
-from chat.config import settings
 from chat.views import ChatSocketView, ChatView
+
+from config import settings
 
 
 def setup_routes(app: Application):
     """Set up routers"""
-    from chat.auth.views import SignUpView, SignInView
+    from auth.views import SignUpView, SignInView
     routers = [
         ('GET', '/chat', ChatView, 'chat'),
         ('GET', '/chat/ws', ChatSocketView, 'chat_ws'),

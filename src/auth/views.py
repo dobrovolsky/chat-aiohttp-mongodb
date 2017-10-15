@@ -1,11 +1,11 @@
 import aiohttp_jinja2
 from aiohttp import web
 from aiohttp_session import get_session
+from auth.validators import UserSingUpValidator, UserSingInValidator
+from user.Exceptions import UserDoesNotExists
+from user.models import User
 
-from chat.auth.validators import UserSingUpValidator, UserSingInValidator
-from chat.user.Exceptions import UserDoesNotExists
-from chat.user.models import User
-from chat.user.utils import get_hash
+from user.utils import get_hash
 
 
 class SignUpView(web.View):
@@ -35,10 +35,9 @@ class SignInView(web.View):
     @aiohttp_jinja2.template('login.html')
     async def get(self):
         """render template with sign in form"""
-        session = await get_session(self.request)
         context = {}
-        if session.get('user_id'):
-            return web.HTTPFound('/')
+        if self.request.user:
+            return web.HTTPFound('/chat')
         return context
 
     async def post(self):
@@ -52,7 +51,7 @@ class SignInView(web.View):
             except UserDoesNotExists:
                 return web.json_response(data={'error': 'user with this credential does not exist'}, status=400)
             else:
-                session['user_id'] = user._id
+                session['user_id'] = str(user.uuid)
                 return web.json_response(data={}, status=200)
         else:
             return web.json_response(data=user_data.errors, status=400)
