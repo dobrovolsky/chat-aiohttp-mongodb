@@ -5,7 +5,8 @@ import uuid
 from user.Exceptions import UserDoesNotExists, UserValidationError
 from marshmallow import Schema, fields
 
-from user.utils import get_hash, get_message_collection, basic_string_validation
+from user.utils import get_hash, get_message_collection
+from common.utils import basic_string_validation
 
 collection = get_message_collection()
 
@@ -44,7 +45,7 @@ class User:
     def __str__(self) -> str:
         return f'id:{self._id}, email:{self.email}'
 
-    async def is_valid(self) -> bool:
+    def is_valid(self) -> bool:
         """check object validation"""
         self.errors = self._validate()
         return not bool(self.errors)
