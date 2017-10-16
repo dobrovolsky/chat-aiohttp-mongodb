@@ -1,6 +1,6 @@
 from marshmallow import Schema, fields
 
-from user.utils import basic_string_validation
+from common.utils import basic_string_validation
 
 
 class UserSingUpValidatorSchema(Schema):

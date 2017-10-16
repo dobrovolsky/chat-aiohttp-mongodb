@@ -22,7 +22,7 @@ class SignUpView(web.View):
         user_data = UserSingUpValidator(**data)
         if await user_data.is_valid():
             user = User(**user_data.get_data())
-            await user.is_valid()
+            user.is_valid()
             await user.save()
         else:
             return web.json_response(data=user_data.errors, status=400)
