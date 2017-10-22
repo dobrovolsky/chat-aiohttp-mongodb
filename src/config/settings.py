@@ -7,7 +7,7 @@ from envparse import env
 
 env_file_path = os.path.join(os.path.dirname(__file__), '.env')
 log = logging.getLogger('app')
-log.setLevel(logging.DEBUG)
+logging.basicConfig(filename='site.log',level=logging.DEBUG)
 
 if not os.path.isfile(env_file_path):
     warnings.warn('.env file not found. Application using default values.', ResourceWarning)

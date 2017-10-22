@@ -13,16 +13,24 @@ from config import setup_routes, settings
 
 
 asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-logger = settings.log
 loop = asyncio.get_event_loop()
 
 async def get_app():
     redis_pool = await create_pool((settings.REDIS_HOST, settings.REDIS_PORT), db=settings.REDIS_DB)
     web_app = web.Application(debug=settings.DEBUG, middlewares=[session_middleware(RedisStorage(redis_pool)),
                                                                  user_data])
+    web_app['ws_connections'] = {}
+    web_app.on_shutdown.append(on_shutdown)
     setup_routes(web_app)
     aiohttp_jinja2.setup(web_app, loader=jinja2.FileSystemLoader(settings.TEMPLATES_DIR))
     return web_app
+
+async def on_shutdown(app):
+    for user in app['ws_connections']:
+        (user_id, ws), = user.items()
+        ws.close()
+    app.pool.close()
+    app.db.close()
 
 if __name__ == '__main__':
     app = loop.run_until_complete(get_app())

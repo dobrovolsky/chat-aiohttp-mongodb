@@ -41,8 +41,8 @@ class Room(BaseModel):
             raise RoomValidationError(self.errors)
         if hasattr(self, '_id'):
             data = self.loads()
-            user_id = data.pop('_id')
-            await collection.replace_one({'_id': user_id}, data)
+            room_id = data.pop('_id')
+            await collection.replace_one({'_id': room_id}, data)
         else:
             result = await collection.insert_one(self.loads())
             self._id = result.inserted_id
@@ -59,7 +59,6 @@ class Room(BaseModel):
     @classmethod
     async def get_room(cls, **filters) -> 'Room':
         """Get user data from db"""
-        print(filters)
         data = await collection.find_one(filters)
         schema = RoomSchema()
         if schema.load(data).data is None:
@@ -72,6 +71,8 @@ class MessageSchema(Schema):
     """Serializer/Deserializer of Room instance"""
     _id = fields.String()
     room_id = fields.String()
+    text = fields.String(required=True, validate=lambda n: basic_string_validation(n, min_length=1,
+                                                                                        max_length=10000))
     uuid = fields.UUID(required=True)
     display_to = fields.List(fields.String())
     read_by = fields.List(fields.String())
@@ -84,8 +85,23 @@ class Message(BaseModel):
     fields = (
         ('_id', None),
         ('room_id', None),
+        ('text', None),
         ('display_to', []),
         ('read_by', []),
         ('created', BaseModel.default_current_time),
     )
+
+    async def save(self) -> None:
+        """save instance to db"""
+        if not hasattr(self, 'errors'):
+            raise RuntimeError('you must call is_valid() before save instance')
+        if self.errors:
+            raise RoomValidationError(self.errors)
+        if hasattr(self, '_id'):
+            data = self.loads()
+            message_id = data.pop('_id')
+            await collection.replace_one({'_id': message_id}, data)
+        else:
+            result = await collection.insert_one(self.loads())
+            self._id = result.inserted_id
 
