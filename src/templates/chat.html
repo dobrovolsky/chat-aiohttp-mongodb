@@ -2,7 +2,23 @@
 {% block title %}Chat{% endblock %}
 {% block content %}
     <h1>hello, {{ user.first_name }}</h1>
-
     {{ chat }}
 
-{% endblock %}
+{% endblock content %}
+{% block js %}
+    <!--{{ super() }}-->
+    <!--TODO: move to file (there's some bug with loading js after changing)-->
+    <script>
+        let ws_conn = new WebSocket('ws://0.0.0.0:8888/ws/chat');
+        ws_conn.onmessage = (data) => {
+            data = JSON.parse(data.data);
+            console.log(data)
+        };
+        ws_conn.onclose = (data) => {console.log(data)}
+    </script>
+    <script>
+        <!--{room_id: "59ec8895e9ca1ade90b85c22", text: "hello there!2!"}-->
+        console.log('{{ chat.id }}');
+        console.log(ws_conn);
+    </script>
+{% endblock js %}

@@ -13,7 +13,7 @@ class BaseModel:
         for field in self.fields:
             setattr(self, field[0], kwargs.get(field[0], field[1]))
         for key, value in self.__dict__.copy().items():
-            if not value:
+            if value is None:
                 delattr(self, key)
 
     @property
@@ -40,5 +40,5 @@ class BaseModel:
         return json.loads(self.schema.dumps(self).data)
 
     @staticmethod
-    def default_current_time(self):
+    def default_current_time():
         return time.time()

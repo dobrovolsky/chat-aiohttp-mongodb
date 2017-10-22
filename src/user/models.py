@@ -4,9 +4,9 @@ from common.models import BaseModel
 from user.Exceptions import UserDoesNotExists, UserValidationError
 
 from common.utils import basic_string_validation
-from user.utils import get_hash, get_message_collection
+from user.utils import get_hash, get_user_collection
 
-collection = get_message_collection()
+collection = get_user_collection()
 
 
 class UserSchema(Schema):
