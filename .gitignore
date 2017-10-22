@@ -70,3 +70,4 @@ fitness/media/
 
 env/
 redis-3.2.11/
+dump.rdb

@@ -1,30 +1,53 @@
+import logging
+
 import aiohttp_jinja2
 from aiohttp import web
-from aiohttp.web_ws import MsgType
 from bson import ObjectId
+from aiohttp.web_ws import WebSocketResponse
 
+from common.utils import validate_message
+
+
+logger = logging.getLogger('chat')
 
 class ChatSocketView(web.View):
     """View for process chat"""
 
     async def get(self):
-        ws = web.WebSocketResponse()
-        await ws.prepare(self.request)
+        resp, ok = await self._handle_connection()
+        if not ok:
+            return resp or web.Response()
+        try:
+            async for msg in resp:
+                logger.debug(f'new message {msg}')
+                data, ok = validate_message(msg)
+                if ok:
+                    await self._handle_message(data)
+                    for user, ws in self.request.app['ws_connections'].items():
+                        await ws.send_str(msg.data)
+                else:
+                    return resp
+            return resp
+        finally:
+            await self._handle_disconnection(resp)
 
-        self.request.app['websockets'].append(ws)
-
-        async for msg in ws:
-            if msg.tp == MsgType.text:
-                self._handler(msg)
-                for _ws in self.request.app['websockets']:
-                    _ws.send_json('')
-            elif msg.tp == MsgType.error:
-                print('ws connection closed with exception %s' % ws.exception())
-        return ws
-
-    async def _handler(self, msg):
+    async def _handle_message(self, msg):
         """Handle ws message"""
         pass
+
+    async def _handle_disconnection(self, resp):
+        del self.request.app['ws_connections'][self.request.user.id]
+        logger.debug(f'{self.request.user} has been disconnected')
+
+    async def _handle_connection(self):
+        resp = WebSocketResponse()
+        ok, protocol = resp.can_prepare(self.request)
+        if not ok:
+            return None, ok
+        await resp.prepare(self.request)
+        self.request.app['ws_connections'][self.request.user.id] = resp
+        logger.debug(f'{self.request.user} has been connected')
+        return resp, ok
 
 
 class ChatListView(web.View):
