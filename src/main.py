@@ -26,11 +26,8 @@ async def get_app():
     return web_app
 
 async def on_shutdown(app):
-    for user in app['ws_connections']:
-        (user_id, ws), = user.items()
+    for user_id, ws in app['ws_connections'].items():
         ws.close()
-    app.pool.close()
-    app.db.close()
 
 if __name__ == '__main__':
     app = loop.run_until_complete(get_app())
