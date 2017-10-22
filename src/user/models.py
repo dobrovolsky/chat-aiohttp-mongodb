@@ -1,7 +1,6 @@
-import json
-import time
-
 from marshmallow import Schema, fields
+
+from common.models import BaseModel
 from user.Exceptions import UserDoesNotExists, UserValidationError
 
 from common.utils import basic_string_validation
@@ -23,41 +22,21 @@ class UserSchema(Schema):
     password = fields.String(required=True)
 
 
-class User:
+class User(BaseModel):
     """User for manipulation in code"""
     schema = UserSchema()
-
-    def __init__(self, **kwargs) -> None:
-        self._id: str = kwargs.get('_id')
-        self.email: str = kwargs.get('email')
-        self.first_name: str = kwargs.get('first_name')
-        self.last_name: str = kwargs.get('last_name')
-        self.created: float = kwargs.get('created', time.time())
-        self.is_active = kwargs.get('is_active', True)
-        self.password = kwargs.get('password')
-        for key, value in self.__dict__.copy().items():
-            if not value:
-                delattr(self, key)
+    fields = (
+        ('_id', None),
+        ('email', None),
+        ('first_name', None),
+        ('last_name', None),
+        ('created', BaseModel.default_current_time),
+        ('is_active', True),
+        ('password', None),
+    )
 
     def __str__(self) -> str:
         return f'id:{self._id}, email:{self.email}'
-
-    def is_valid(self) -> bool:
-        """check object validation"""
-        self.errors = self._validate()
-        return not bool(self.errors)
-
-    def _validate(self) -> dict:
-        """validate object with marshmallow"""
-        user = self.schema.dumps(self)
-        errors = self.schema.loads(user.data).errors
-        if user.errors:
-            errors.update(user.errors)
-        return errors
-
-    def loads(self) -> dict:
-        """serialize object to json"""
-        return json.loads(self.schema.dumps(self).data)
 
     async def save(self) -> None:
         """save instance to db"""
@@ -91,7 +70,3 @@ class User:
     def check_password(self, raw_password):
         """check password for user"""
         return self.password == get_hash(raw_password)
-
-    @property
-    def id(self):
-        return self._id
