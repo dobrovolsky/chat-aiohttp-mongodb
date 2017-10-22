@@ -33,7 +33,18 @@ class ChatSocketView(web.View):
 
     async def _handle_message(self, msg):
         """Handle ws message"""
-        pass
+        from chat.models import Message, Room
+        room = await Room.get_room(_id=ObjectId(msg['room_id']))
+        display_to = room.members[:]
+        need_read = display_to[:]
+        need_read.remove(self.request.user.id)
+        msg.update({
+            'display_to': display_to,
+            'need_read': need_read
+        })
+        message = Message(**msg)
+        message.is_valid()
+        await message.save()
 
     async def _handle_disconnection(self, resp):
         del self.request.app['ws_connections'][self.request.user.id]

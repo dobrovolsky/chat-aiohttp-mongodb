@@ -1,21 +1,12 @@
 from typing import List
 
-from marshmallow import Schema, fields
-
-from chat.Exceptions import RoomValidationError, RoomDoesNotExists
+from chat.Exceptions import RoomValidationError, RoomDoesNotExists, MessageValidationError
+from chat.schemas import RoomSchema, MessageSchema
 from common.models import BaseModel
-from common.utils import basic_string_validation
-from user.utils import get_room_collection
+from user.utils import get_room_collection, get_message_collection
 
-collection = get_room_collection()
-
-class RoomSchema(Schema):
-    """Serializer/Deserializer of Room instance"""
-    _id = fields.String()
-    room_name = fields.String(required=True, validate=lambda n: basic_string_validation(n, min_length=2,
-                                                                                        max_length=100))
-    members = fields.List(fields.String())
-    created = fields.Float(required=True)
+room_collection = get_room_collection()
+message_collection = get_message_collection()
 
 
 class Room(BaseModel):
@@ -42,41 +33,29 @@ class Room(BaseModel):
         if hasattr(self, '_id'):
             data = self.loads()
             room_id = data.pop('_id')
-            await collection.replace_one({'_id': room_id}, data)
+            await room_collection.replace_one({'_id': room_id}, data)
         else:
-            result = await collection.insert_one(self.loads())
+            result = await room_collection.insert_one(self.loads())
             self._id = result.inserted_id
 
     @classmethod
     async def get_rooms(cls, user) -> List['Room']:
         rooms = []
         schema = RoomSchema()
-        async for document in collection.find({'members': user._id}):
+        async for document in room_collection.find({'members': user._id}):
             document['_id'] = str(document['_id'])
             rooms.append(cls(**schema.load(document).data))
         return rooms
 
     @classmethod
     async def get_room(cls, **filters) -> 'Room':
-        """Get user data from db"""
-        data = await collection.find_one(filters)
+        """Get data from db"""
+        data = await room_collection.find_one(filters)
         schema = RoomSchema()
         if schema.load(data).data is None:
             raise RoomDoesNotExists
         data['_id'] = str(data['_id'])
         return cls(**schema.load(data).data)
-
-
-class MessageSchema(Schema):
-    """Serializer/Deserializer of Room instance"""
-    _id = fields.String()
-    room_id = fields.String()
-    text = fields.String(required=True, validate=lambda n: basic_string_validation(n, min_length=1,
-                                                                                        max_length=10000))
-    uuid = fields.UUID(required=True)
-    display_to = fields.List(fields.String())
-    read_by = fields.List(fields.String())
-    created = fields.Float(required=True)
 
 
 class Message(BaseModel):
@@ -87,7 +66,7 @@ class Message(BaseModel):
         ('room_id', None),
         ('text', None),
         ('display_to', []),
-        ('read_by', []),
+        ('need_read', []),
         ('created', BaseModel.default_current_time),
     )
 
@@ -96,12 +75,12 @@ class Message(BaseModel):
         if not hasattr(self, 'errors'):
             raise RuntimeError('you must call is_valid() before save instance')
         if self.errors:
-            raise RoomValidationError(self.errors)
+            raise MessageValidationError(self.errors)
         if hasattr(self, '_id'):
             data = self.loads()
             message_id = data.pop('_id')
-            await collection.replace_one({'_id': message_id}, data)
+            await message_collection.replace_one({'_id': message_id}, data)
         else:
-            result = await collection.insert_one(self.loads())
+            result = await message_collection.insert_one(self.loads())
             self._id = result.inserted_id
 
