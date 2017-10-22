@@ -3,6 +3,10 @@
 {% block content %}
     <h1>hello, {{ user.first_name }}</h1>
 
-    {{ chat }}
+    {% for room in chats %}
+    <p>
+        <a href="{{ url('chat', id=room.id) }}">{{ room.room_name }}</a>
+    </p>
+    {% endfor %}
 
 {% endblock %}

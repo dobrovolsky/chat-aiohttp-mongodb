@@ -1,6 +1,5 @@
 from marshmallow import Schema
 
-
 class BaseValidator:
     """base validator"""
     def __init__(self):

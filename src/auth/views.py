@@ -51,7 +51,7 @@ class SignInView(web.View):
             except UserDoesNotExists:
                 return web.json_response(data={'error': 'user with this credential does not exist'}, status=400)
             else:
-                session['user_id'] = str(user.uuid)
+                session['user_id'] = str(user.id)
                 return web.json_response(data={}, status=200)
         else:
             return web.json_response(data=user_data.errors, status=400)
