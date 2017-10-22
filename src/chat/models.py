@@ -99,8 +99,8 @@ class Message(BaseModel):
             raise RoomValidationError(self.errors)
         if hasattr(self, '_id'):
             data = self.loads()
-            room_id = data.pop('_id')
-            await collection.replace_one({'_id': room_id}, data)
+            message_id = data.pop('_id')
+            await collection.replace_one({'_id': message_id}, data)
         else:
             result = await collection.insert_one(self.loads())
             self._id = result.inserted_id
