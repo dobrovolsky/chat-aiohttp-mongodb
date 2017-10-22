@@ -1,5 +1,7 @@
 from typing import List
 
+from bson import ObjectId
+
 from chat.Exceptions import RoomValidationError, RoomDoesNotExists, MessageValidationError
 from chat.schemas import RoomSchema, MessageSchema
 from common.models import BaseModel
@@ -84,3 +86,16 @@ class Message(BaseModel):
             result = await message_collection.insert_one(self.loads())
             self._id = result.inserted_id
 
+    @classmethod
+    async def add_message(cls, room_id, user, text):
+        room = await Room.get_room(_id=ObjectId(room_id))
+        data = {
+            'room_id': room_id,
+            'display_to': room.members[:],
+            'need_read': room.members[:].remove(user.id),
+            'text': text,
+        }
+        message = cls(**data)
+        message.is_valid()
+        await message.save()
+        return message
