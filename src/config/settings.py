@@ -25,8 +25,9 @@ MONGO_HOST = env.str('MONGO_HOST', default='localhost')
 MONGO_PORT = env.int('MONGO_PORT', default=27017)
 MONGO_DB_NAME = env.str('MONGO_DB_NAME', default='chat')
 
-MONGO_MESSAGE_COLLECTION = env.str('MESSAGE_COLLECTION', default='messages')
-MONGO_USER_COLLECTION = env.str('USER_COLLECTION', default='users')
+MONGO_MESSAGE_COLLECTION = env.str('MONGO_MESSAGE_COLLECTION', default='messages')
+MONGO_USER_COLLECTION = env.str('MONGO_USER_COLLECTION', default='users')
+MONGO_ROOM_COLLECTION = env.str('MONGO_ROOM_COLLECTION', default='rooms')
 
 _base_dir = pathlib.Path(__file__).parent.parent
 BASE_DIR = str(_base_dir)

@@ -1,12 +1,11 @@
 import json
 import time
-import uuid
 
-from user.Exceptions import UserDoesNotExists, UserValidationError
 from marshmallow import Schema, fields
+from user.Exceptions import UserDoesNotExists, UserValidationError
 
-from user.utils import get_hash, get_message_collection
 from common.utils import basic_string_validation
+from user.utils import get_hash, get_message_collection
 
 collection = get_message_collection()
 
@@ -14,7 +13,6 @@ collection = get_message_collection()
 class UserSchema(Schema):
     """Serializer/Deserializer of User instance"""
     _id = fields.String()
-    uuid = fields.UUID(required=True)
     email = fields.Email(required=True)
     first_name = fields.String(required=True, validate=lambda n: basic_string_validation(n, min_length=2,
                                                                                          max_length=100))
@@ -31,7 +29,6 @@ class User:
 
     def __init__(self, **kwargs) -> None:
         self._id: str = kwargs.get('_id')
-        self.uuid: uuid = kwargs.get('uuid', str(uuid.uuid4()))
         self.email: str = kwargs.get('email')
         self.first_name: str = kwargs.get('first_name')
         self.last_name: str = kwargs.get('last_name')
@@ -75,7 +72,7 @@ class User:
         else:
             self.set_password(self.password)
             result = await collection.insert_one(self.loads())
-            self.id = result.inserted_id
+            self._id = result.inserted_id
 
     @classmethod
     async def get_user(cls, **filters) -> 'User':
@@ -94,3 +91,7 @@ class User:
     def check_password(self, raw_password):
         """check password for user"""
         return self.password == get_hash(raw_password)
+
+    @property
+    def id(self):
+        return self._id
