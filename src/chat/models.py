@@ -59,6 +59,8 @@ class Room(BaseModel):
         data['_id'] = str(data['_id'])
         return cls(**schema.load(data).data)
 
+    async def get_messages(self) -> List['Message']:
+        return await Message.get_messages(self._id)
 
 class Message(BaseModel):
     """Message for manipulation in code"""
@@ -92,10 +94,19 @@ class Message(BaseModel):
         data = {
             'room_id': room_id,
             'display_to': room.members[:],
-            'need_read': room.members[:].remove(user.id),
+            'need_read': room.members[:].remove(user.id) or [],
             'text': text,
         }
         message = cls(**data)
         message.is_valid()
         await message.save()
         return message
+
+    @classmethod
+    async def get_messages(cls, room_id) -> List['Message']:
+        messages = []
+        schema = MessageSchema()
+        async for document in message_collection.find({'room_id': room_id}):
+            document['_id'] = str(document['_id'])
+            messages.append(cls(**schema.load(document).data))
+        return messages

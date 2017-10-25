@@ -22,19 +22,30 @@ class ChatSocketView(web.View):
                 logger.debug(f'new message {msg}')
                 data, ok = validate_message(msg)
                 if ok:
-                    await self._handle_message(data)
+                    data = await self._handle_message(data)
                     for user, ws in self.request.app['ws_connections'].items():
-                        await ws.send_str(msg.data)
+                        await ws.send_json(data)
                 else:
                     return resp
             return resp
+        except Exception as e:
+            print(e)
         finally:
             await self._handle_disconnection(resp)
 
     async def _handle_message(self, msg):
         """Handle ws message"""
-        from chat.models import Message
-        await Message.add_message(room_id=msg['room_id'], user=self.request.user, text=msg['text'])
+        action = msg.get('action', '')
+        if action == 'get_message':
+            pass
+        elif action == 'add_message':
+            from chat.models import Message
+            message = await Message.add_message(room_id=msg['room_id'], user=self.request.user, text=msg['text'])
+            return {'event': 'new_message', 'data': message.loads()}
+        else:
+            raise Exception('not allowed action')
+
+
 
     async def _handle_disconnection(self, resp):
         del self.request.app['ws_connections'][self.request.user.id]
@@ -74,4 +85,5 @@ class ChatView(web.View):
         context = dict()
         context['user'] = self.request.user
         context['chat'] = await Room.get_room(_id=ObjectId(chat_id))
+        context['messages'] = await context['chat'].get_messages()
         return context

@@ -1,24 +1,46 @@
 {% extends "base.html" %}
 {% block title %}Chat{% endblock %}
 {% block content %}
+    <div id="passed-data" data-room-id="{{ chat.id }}"></div>
     <h1>hello, {{ user.first_name }}</h1>
-    {{ chat }}
+    {% for message in messages %}
+        {{ message.text }}
+    {% endfor %}
+    <br>
+    <label for="text-input-id">
+        Message:
+    </label>
+    <input id="text-input-id" type="text">
+    <input id="submit-button-id" type="button" value="send" class="btn">
 
 {% endblock content %}
 {% block js %}
-    <!--{{ super() }}-->
-    <!--TODO: move to file (there's some bug with loading js after changing)-->
-    <script>
-        let ws_conn = new WebSocket('ws://0.0.0.0:8888/ws/chat');
-        ws_conn.onmessage = (data) => {
+{#    {{ super() }}#}
+{#    TODO: move to file (there's some bug with loading js after changing)#}
+    <script {#  main.js  #}>
+        let ws = new WebSocket('ws://0.0.0.0:8888/ws/chat');
+        ws.onmessage = (data) => {
             data = JSON.parse(data.data);
             console.log(data)
         };
-        ws_conn.onclose = (data) => {console.log(data)}
+        ws.onclose = (data) => {console.log(data)};
     </script>
-    <script>
-        <!--{room_id: "59ec8895e9ca1ade90b85c22", text: "hello there!2!"}-->
-        console.log('{{ chat.id }}');
-        console.log(ws_conn);
+
+    <script {#  chat.js #}>
+        (() => {
+            let chat_id = $('#passed-data').attr('data-room-id');
+            let input = $('#text-input-id');
+            let submit_button = $('#submit-button-id');
+            submit_button.click(()=>{
+                let text = input.val();
+                let data = {
+                    'action': 'add_message',
+                    'room_id': chat_id,
+                    'text': text
+                };
+                console.log('sent: ', data);
+                ws.send(JSON.stringify(data))
+            })
+        })();
     </script>
 {% endblock js %}
