@@ -15,9 +15,9 @@ def basic_string_validation(value, min_length=None, max_length=None, blank=False
 
 
 def validate_message(message):
-    from chat.validators import AddingMessageValidator
     if message.type == WSMsgType.TEXT:
         data = message.json()
-        return data, AddingMessageValidator(**data).is_valid()
+        return data, True
+        # return data, AddingMessageValidator(**data).is_valid()
     else:
         return None, False

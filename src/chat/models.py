@@ -111,6 +111,14 @@ class Message(BaseModel):
             messages.append(cls(**schema.load(document).data))
         return messages
 
+    @classmethod
+    async def get_json_messages(cls, room_id) -> List['Message']:
+        data = await cls.get_messages(room_id)
+        result = []
+        for message in data:
+            result.append(message.loads())
+        return result
+
     @staticmethod
     async def get_message_read_count(user_id) -> int:
         result = 0

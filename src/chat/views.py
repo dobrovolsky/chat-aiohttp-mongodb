@@ -9,6 +9,7 @@ from common.utils import validate_message
 
 
 logger = logging.getLogger('chat')
+logger.debug = print
 
 class ChatSocketView(web.View):
     """View for process chat"""
@@ -36,10 +37,14 @@ class ChatSocketView(web.View):
     async def _handle_message(self, msg):
         """Handle ws message"""
         action = msg.get('action', '')
-        if action == 'get_message':
-            pass
+        from chat.models import Message
+        if action == 'get_messages':
+            return {
+                'event': 'get_messages',
+                'data': await Message.get_json_messages(msg['room_id']),
+                'need_read_count': await self.request.user.get_message_need_count()
+            }
         elif action == 'add_message':
-            from chat.models import Message
             message = await Message.add_message(room_id=msg['room_id'], user=self.request.user, text=msg['text'])
             return {
                 'event': 'new_message',

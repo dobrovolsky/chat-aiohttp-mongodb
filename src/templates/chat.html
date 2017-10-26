@@ -4,11 +4,7 @@
     <div id="passed-data" data-room-id="{{ chat.id }}"></div>
     <div class="card card-default">
         <div class="card-body">
-            <ul class="list-group">
-                {% for message in messages %}
-                    <li class="list-group-item">{{ message.text }}</li>
-                {% endfor %}
-            </ul>
+            <ul class="list-group" id="message-container-id"></ul>
         </div>
         <div class="card-body">
             <div class="input-group">
@@ -31,6 +27,7 @@
     {#    TODO: move to file (there's some bug with loading js after changing)#}
     <script {#  main.js  #}>
         let ws = new WebSocket('ws://0.0.0.0:8888/ws/chat');
+        let counter = $('#message-counter-id');
         ws.onmessage = (data) => {
             data = JSON.parse(data.data);
             handle_message(data);
@@ -39,15 +36,20 @@
             console.log(data)
         };
         let handle_message = (data) => {
-            console.log(data);
-        }
+            if (data.event == 'get_messages'){
+                insert_messages(data);
+            }if (data.event == 'new_message'){
+
+            }
+        };
     </script>
 
     <script {#  chat.js #}>
-        (() => {
             let chat_id = $('#passed-data').attr('data-room-id');
             let input = $('#text-input-id');
             let submit_button = $('#submit-button-id');
+            let message_container = $('#message-container-id');
+
             submit_button.click(() => {
                 let text = input.val();
                 let data = {
@@ -57,7 +59,23 @@
                 };
                 ws.send(JSON.stringify(data));
                 input.val('');
-            })
-        })();
+            });
+            ws.onopen = () => {
+                ws.send(JSON.stringify({
+                        'action': 'get_messages',
+                        'limit': 100,
+                        'offset': 0,
+                        'room_id': chat_id
+                    }))
+            };
+            let insert_messages = (data) => {
+                data.data.sort((first, second) => {
+                    return first > second;
+                });
+                for (let i in data.data) {
+                    message_container.append(`<li class="list-group-item">${data.data[i].text}</li>`);
+                }
+            }
+
     </script>
 {% endblock js %}
