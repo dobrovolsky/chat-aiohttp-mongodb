@@ -1,12 +1,17 @@
 {% extends "base.html" %}
 {% block title %}Chat{% endblock %}
 {% block content %}
-    <h1>hello, {{ user.first_name }}</h1>
+    <div class="card card-default">
+        <div class="card-body">
+            <ul class="list-group">
+                {% for room in chats %}
+                    <li class="list-group-item">
+                        <a href="{{ url('chat', id=room.id) }}">{{ room.room_name }}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
 
-    {% for room in chats %}
-    <p>
-        <a href="{{ url('chat', id=room.id) }}">{{ room.room_name }}</a>
-    </p>
-    {% endfor %}
 
 {% endblock %}

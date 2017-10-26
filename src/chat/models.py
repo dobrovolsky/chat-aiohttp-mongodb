@@ -110,3 +110,15 @@ class Message(BaseModel):
             document['_id'] = str(document['_id'])
             messages.append(cls(**schema.load(document).data))
         return messages
+
+    @staticmethod
+    async def get_message_read_count(user_id) -> int:
+        result = 0
+        query = message_collection.aggregate([
+                {'$match': {'need_read': user_id}},
+                {'$group': {'_id': None, 'count': {'$sum': 1}}}
+            ]
+        )
+        async for document in query:
+            result = document['count']
+        return result

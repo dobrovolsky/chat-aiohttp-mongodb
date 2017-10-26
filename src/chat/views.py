@@ -41,7 +41,11 @@ class ChatSocketView(web.View):
         elif action == 'add_message':
             from chat.models import Message
             message = await Message.add_message(room_id=msg['room_id'], user=self.request.user, text=msg['text'])
-            return {'event': 'new_message', 'data': message.loads()}
+            return {
+                'event': 'new_message',
+                'data': message.loads(),
+                'need_read_count': await self.request.user.get_message_need_count()
+            }
         else:
             raise Exception('not allowed action')
 
