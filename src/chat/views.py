@@ -22,9 +22,9 @@ class ChatSocketView(web.View):
                 logger.debug(f'new message {msg}')
                 data, ok = validate_message(msg)
                 if ok:
-                    data = await self._handle_message(data)
-                    for user, ws in self.request.app['ws_connections'].items():
-                        await ws.send_json(data)
+                    data, send_to = await self._handle_message(data)
+                    for ws in send_to:
+                        ws.send_json(data)
                 else:
                     return resp
             return resp
@@ -37,19 +37,21 @@ class ChatSocketView(web.View):
         """Handle ws message"""
         action = msg.get('action', '')
         from chat.models import Message
+        from chat.models import Room
         if action == 'get_messages':
             return {
                 'event': 'get_messages',
                 'data': await Message.get_json_messages(msg['room_id']),
                 'need_read_count': await self.request.user.get_message_need_count()
-            }
+            }, [self.request.app['ws_connections'][self.request.user.id]]
         elif action == 'add_message':
             message = await Message.add_message(room_id=msg['room_id'], user=self.request.user, text=msg['text'])
+            room = await Room.get_room(_id=ObjectId(msg['room_id']))
             return {
                 'event': 'new_message',
                 'data': message.loads(),
                 'need_read_count': await self.request.user.get_message_need_count()
-            }
+            }, [self.request.app['ws_connections'][user_id] for user_id in room.members]
         else:
             raise Exception('not allowed action')
 
