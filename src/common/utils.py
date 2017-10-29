@@ -18,6 +18,5 @@ def validate_message(message):
     if message.type == WSMsgType.TEXT:
         data = message.json()
         return data, True
-        # return data, AddingMessageValidator(**data).is_valid()
     else:
         return None, False
