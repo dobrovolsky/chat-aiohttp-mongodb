@@ -20,3 +20,17 @@ def validate_message(message):
         return data, True
     else:
         return None, False
+
+
+def multi_dict_to_dict(data):
+    data2 = dict()
+    for key, value in data.items():
+        if key in data2:
+            if isinstance(data2[key], list):
+                data2[key].append(value)
+            else:
+                tmp = data2[key]
+                data2[key] = [tmp, value]
+        else:
+            data2[key] = value
+    return data2

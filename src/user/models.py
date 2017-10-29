@@ -1,3 +1,5 @@
+from typing import List
+
 from marshmallow import Schema, fields
 
 from chat.models import Message
@@ -37,7 +39,10 @@ class User(BaseModel):
     )
 
     def __str__(self) -> str:
-        return f'id:{self._id}, email:{self.email}'
+        instance_id = None
+        if hasattr(self, "_id"):
+            instance_id = self.id
+        return f'id:{instance_id}, email:{self.email}'
 
     async def save(self) -> None:
         """save instance to db"""
@@ -63,6 +68,16 @@ class User(BaseModel):
             raise UserDoesNotExists
         data['_id'] = str(data['_id'])
         return cls(**schema.load(data).data)
+
+    @classmethod
+    async def get_users(cls, **filters) -> List['User']:
+        """Get user data from db"""
+        schema = UserSchema()
+        users = []
+        async for document in collection.find(filters):
+            document['_id'] = str(document['_id'])
+            users.append(cls(**schema.load(document).data))
+        return users
 
     def set_password(self, raw_password):
         """Set password for user"""

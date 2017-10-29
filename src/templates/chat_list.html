@@ -3,13 +3,17 @@
 {% block content %}
     <div class="card card-default">
         <div class="card-body">
-            <ul class="list-group">
-                {% for room in chats %}
-                    <li class="list-group-item">
-                        <a href="{{ url('chat', id=room.id) }}">{{ room.room_name }}</a>
-                    </li>
-                {% endfor %}
-            </ul>
+            {% if chats %}
+                <ul class="list-group">
+                    {% for room in chats %}
+                        <li class="list-group-item">
+                            <a href="{{ url('chat', id=room.id) }}">{{ room.room_name }}</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                You don't have any chats yet
+            {% endif %}
         </div>
     </div>
 

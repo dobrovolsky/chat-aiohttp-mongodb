@@ -20,11 +20,13 @@ class Room(BaseModel):
         ('members', []),
         ('created', BaseModel.default_current_time),
         ('is_active', True),
-        ('password', None),
     )
 
     def __str__(self) -> str:
-        return f'id:{self._id}, room name:{self.room_name}'
+        instance_id = None
+        if hasattr(self, "_id"):
+            instance_id = self.id
+        return f'id:{instance_id}, room name:{self.room_name}'
 
     async def save(self) -> None:
         """save instance to db"""

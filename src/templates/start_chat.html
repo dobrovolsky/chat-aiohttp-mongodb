@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Chat{% endblock %}
+{% block content %}
+    <div class="card card-default">
+        <div class="card-body">
+            {% if users %}
+                <form method="post" action="{{ url('start_chat') }}">
+                    <div class="form-group">
+                        <label for="room_name" class="col-sm-2 control-label">Chat name</label>
+                        <input type="text" class="form-control" placeholder="Chat name" name="room_name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="members" class="col-sm-2 control-label">Members</label>
+                        <select multiple class="form-control" name="members" required>
+                        {% for user_loop in users %}
+                          <option value="{{ user_loop.id }}">{{ user_loop.email }}</option>
+                        {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <input type="submit" value="Create chat" class="btn bnd-default">
+                    </div>
+                </form>
+            {% else %}
+                There are no users =(
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

@@ -37,7 +37,7 @@ class SignInView(web.View):
         """render template with sign in form"""
         context = {}
         if self.request.user:
-            return web.HTTPFound('/chat')
+            return web.HTTPFound('/chat-list')
         return context
 
     async def post(self):
