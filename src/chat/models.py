@@ -70,6 +70,8 @@ class Message(BaseModel):
     fields = (
         ('_id', None),
         ('room_id', None),
+        ('from_user_id', None),
+        ('from_user_first_name', None),
         ('text', None),
         ('display_to', []),
         ('need_read', []),
@@ -95,6 +97,8 @@ class Message(BaseModel):
         room = await Room.get_room(_id=ObjectId(room_id))
         data = {
             'room_id': room_id,
+            'from_user_id': user.id,
+            'from_user_first_name': user.first_name,
             'display_to': room.members[:],
             'need_read': room.members[:].remove(user.id) or [],
             'text': text,

@@ -1,10 +1,61 @@
 {% extends "base.html" %}
 {% block title %}Chat{% endblock %}
 {% block content %}
-    <div id="passed-data" data-room-id="{{ chat.id }}"></div>
+    <style>
+        /* Chat containers */
+        .message-container {
+            border: 2px solid #dedede;
+            background-color: #f1f1f1;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+
+        /* Darker chat container */
+        .darker {
+            border-color: #ccc;
+            background-color: #ddd;
+        }
+
+        /* Clear floats */
+        .message-container::after {
+            content: "";
+            clear: both;
+            display: table;
+        }
+
+        /* Style images */
+        .message-container img {
+            float: left;
+            max-width: 60px;
+            width: 100%;
+            margin-right: 20px;
+            border-radius: 50%;
+        }
+
+        /* Style the right image */
+        .message-container img.right {
+            float: right;
+            margin-left: 20px;
+            margin-right: 0;
+        }
+
+        /* Style time text */
+        .time-right {
+            float: right;
+            color: #aaa;
+        }
+
+        /* Style time text */
+        .time-left {
+            float: left;
+            color: #999;
+        }
+    </style>
+    <div id="passed-data" data-room-id="{{ chat.id }}" data-user-id="{{ user.id }}"></div>
     <div class="card card-default">
-        <div class="card-body">
-            <ul class="list-group" id="message-container-id"></ul>
+        <div class="card-body" id="message-container-id">
+
         </div>
         <div class="card-body">
             <div class="input-group">
@@ -36,50 +87,73 @@
             console.log(data)
         };
         let handle_message = (data) => {
-            if (data.event == 'get_messages'){
+            if (data.event == 'get_messages') {
                 insert_messages(data);
-            }if (data.event == 'new_message'){
-                inset_incomming_message(data);
+            }
+            if (data.event == 'new_message') {
+                _insert_message(data.data.from_user_id, data.data.from_user_first_name, data.data.text, data.data.created);
             }
         };
     </script>
 
     <script {#  chat.js #}>
-            let chat_id = $('#passed-data').attr('data-room-id');
-            let input = $('#text-input-id');
-            let submit_button = $('#submit-button-id');
-            let message_container = $('#message-container-id');
+        let chat_id = $('#passed-data').attr('data-room-id');
+        let user_id = $('#passed-data').attr('data-user-id');
+        let input = $('#text-input-id');
+        let submit_button = $('#submit-button-id');
+        let message_container = $('#message-container-id');
 
-            submit_button.click(() => {
-                let text = input.val();
-                let data = {
-                    'action': 'add_message',
-                    'room_id': chat_id,
-                    'text': text
-                };
-                ws.send(JSON.stringify(data));
-                input.val('');
-            });
-            ws.onopen = () => {
-                ws.send(JSON.stringify({
-                        'action': 'get_messages',
-                        'limit': 100,
-                        'offset': 0,
-                        'room_id': chat_id
-                    }))
+        submit_button.click(() => {
+            let text = input.val();
+            let data = {
+                'action': 'add_message',
+                'room_id': chat_id,
+                'text': text
             };
-            let insert_messages = (data) => {
-                data.data.sort((first, second) => {
-                    return first > second;
-                });
-                for (let i in data.data) {
-                    message_container.append(`<li class="list-group-item">${data.data[i].text}</li>`);
-                }
-            };
-            let inset_incomming_message = (data) => {
-                console.log(data);
-                message_container.append(`<li class="list-group-item">${data.data.text}</li>`);
+            ws.send(JSON.stringify(data));
+            input.val('');
+        });
+        ws.onopen = () => {
+            ws.send(JSON.stringify({
+                'action': 'get_messages',
+                'limit': 100,
+                'offset': 0,
+                'room_id': chat_id
+            }))
+        };
+        let _insert_message = (message_user_id, user_name, text, time) => {
+            let darker = "";
+            let image_class = "left";
+            let time_class = "right";
+            if (message_user_id == user_id){
+                darker = "darker";
+                image_class = "right";
+                time_class = "left";
             }
+            let date = new Date(time*1000);
+            let hours = date.getHours();
+            let minutes = "0" + date.getMinutes();
+            let seconds = "0" + date.getSeconds();
+            let formattedTime = hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
+
+            let insert_string = `<div class="message-container ${darker}">
+                                    <img src="https://tracker.moodle.org/secure/thumbnail/30912/_thumb_30912.png" alt="${user_name}" class="${image_class}">
+                                    <p>${text}</p>
+                                    <span class="time-${time_class}">${formattedTime}</span>
+                                 </div>`;
+            message_container.append(insert_string);
+        };
+        let insert_messages = (data) => {
+            data.data.sort((first, second) => {
+                return first > second;
+            });
+            for (let i in data.data) {
+                _insert_message(data.data[i].from_user_id,
+                                data.data[i].from_user_first_name,
+                                data.data[i].text,
+                                data.data[i].created);
+            }
+        };
 
     </script>
 {% endblock js %}

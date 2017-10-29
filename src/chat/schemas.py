@@ -16,6 +16,8 @@ class MessageSchema(Schema):
     """Serializer/Deserializer of Room instance"""
     _id = fields.String()
     room_id = fields.String()
+    from_user_id = fields.String()
+    from_user_first_name = fields.String()
     text = fields.String(required=True, validate=lambda n: basic_string_validation(n, min_length=1,
                                                                                         max_length=10000))
     display_to = fields.List(fields.String())
