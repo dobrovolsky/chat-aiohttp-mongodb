@@ -51,7 +51,9 @@ class ChatSocketView(web.View):
                 'event': 'new_message',
                 'data': message.loads(),
                 'need_read_count': await self.request.user.get_message_need_count()
-            }, [self.request.app['ws_connections'][user_id] for user_id in room.members]
+            }, (self.request.app['ws_connections'].get(user_id)
+                for user_id in room.members if self.request.app['ws_connections'].get(user_id))
+
         else:
             raise Exception('not allowed action')
 
