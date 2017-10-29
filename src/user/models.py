@@ -1,5 +1,6 @@
 from marshmallow import Schema, fields
 
+from chat.models import Message
 from common.models import BaseModel
 from user.Exceptions import UserDoesNotExists, UserValidationError
 
@@ -70,3 +71,6 @@ class User(BaseModel):
     def check_password(self, raw_password):
         """check password for user"""
         return self.password == get_hash(raw_password)
+
+    async def get_message_need_count(self):
+        return await Message.get_message_read_count(self.id)
