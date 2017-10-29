@@ -29,10 +29,10 @@ class BaseModel:
         """validate object with marshmallow"""
         if not hasattr(self, 'schema') and not isinstance(self.schema, Schema):
             raise NotImplementedError('class should have schema instance of `Schema`')
-        user = self.schema.dumps(self)
-        errors = self.schema.loads(user.data).errors
-        if user.errors:
-            errors.update(user.errors)
+        instance = self.schema.dumps(self)
+        errors = self.schema.loads(instance.data).errors
+        if instance.errors:
+            errors.update(instance.errors)
         return errors
 
     def loads(self) -> dict:

@@ -1,5 +1,5 @@
 from aiohttp.web import Application
-from chat.views import ChatSocketView, ChatListView, ChatView
+from chat.views import ChatSocketView, ChatListView, ChatView, CreateChatView
 
 from config import settings
 
@@ -10,6 +10,7 @@ def setup_routes(app: Application):
     routers = [
         ('GET', '/chat-list', ChatListView, 'chat_list'),
         ('GET', '/chat/{id}', ChatView, 'chat'),
+        ('*', '/start-chat', CreateChatView, 'start_chat'),
         ('GET', '/ws/chat', ChatSocketView, 'chat_ws'),
         ('*', '/signup', SignUpView, 'signup'),
         ('*',   '/signin',  SignInView, 'signin'),
