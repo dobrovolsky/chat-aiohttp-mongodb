@@ -39,7 +39,7 @@
             if (data.event == 'get_messages'){
                 insert_messages(data);
             }if (data.event == 'new_message'){
-
+                inset_incomming_message(data);
             }
         };
     </script>
@@ -75,6 +75,9 @@
                 for (let i in data.data) {
                     message_container.append(`<li class="list-group-item">${data.data[i].text}</li>`);
                 }
+            };
+            let inset_incomming_message = (data) => {
+                message_container.append(`<li class="list-group-item">${data.data.text}</li>`);
             }
 
     </script>

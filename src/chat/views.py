@@ -98,7 +98,10 @@ class CreateChatView(web.View):
         data = multi_dict_to_dict(await self.request.post())
         room = Room(**data)
         if room.is_valid():
-            room.members.append(self.request.user.id)
+            try:
+                room.members.append(self.request.user.id)
+            except AttributeError:
+                room.members = [room.members, self.request.user.id]
             await room.save()
             return web.HTTPFound(f'/chat/{room.id}')
         return web.json_response(data=room.errors, status=400)
