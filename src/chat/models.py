@@ -84,6 +84,11 @@ class Message(BaseModel):
         ('created', BaseModel.default_current_time),
     )
 
+    def bind_media_url(self) -> dict:
+        if hasattr(self, 'file') and self.file:
+            self.file = bind_media_url(self.file)
+        return super().loads()
+
     async def save(self) -> None:
         """save instance to db"""
         if not hasattr(self, 'errors'):
@@ -111,6 +116,7 @@ class Message(BaseModel):
         message = cls(**data)
         message.is_valid()
         await message.save()
+        message.bind_media_url()
         return message
 
     @classmethod
@@ -119,9 +125,9 @@ class Message(BaseModel):
         schema = MessageSchema()
         async for document in message_collection.find({'room_id': room_id}):
             document['_id'] = str(document['_id'])
-            if 'file' in document:
-                document['file'] = bind_media_url(document['file'])
-            messages.append(cls(**schema.load(document).data))
+            instance = cls(**schema.load(document).data)
+            instance.bind_media_url()
+            messages.append(instance)
         return messages
 
     @classmethod
@@ -163,4 +169,5 @@ class Message(BaseModel):
         message = cls(**data)
         message.is_valid()
         await message.save()
+        message.bind_media_url()
         return message

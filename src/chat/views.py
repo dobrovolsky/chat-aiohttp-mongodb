@@ -10,6 +10,7 @@ from common.utils import validate_message, multi_dict_to_dict
 logger = logging.getLogger('chat')
 logger.debug = print
 
+
 class ChatSocketView(web.View):
     """View for process chat"""
 
@@ -94,6 +95,7 @@ class ChatListView(web.View):
         context['user'] = self.request.user
         context['chats'] = await Room.get_rooms(self.request.user)
         return context
+
 
 class CreateChatView(web.View):
     @aiohttp_jinja2.template('start_chat.html')

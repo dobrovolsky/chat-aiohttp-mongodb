@@ -92,7 +92,7 @@
                 insert_messages(data);
             }
             if (data.event == 'new_message') {
-                _insert_message(data.data.from_user_id, data.data.from_user_first_name, data.data.text, data.data.created);
+                _insert_message(data.data.from_user_id, data.data.from_user_first_name, data.data.text, data.data.created, data.data.file);
             }
         };
     </script>
