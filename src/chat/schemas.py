@@ -19,7 +19,8 @@ class MessageSchema(Schema):
     from_user_id = fields.String()
     from_user_first_name = fields.String()
     text = fields.String(required=True, validate=lambda n: basic_string_validation(n, min_length=1,
-                                                                                        max_length=10000))
+                                                                                   max_length=10000))
+    file = fields.String()
     display_to = fields.List(fields.String())
     need_read = fields.List(fields.String())
     created = fields.Float(required=True)

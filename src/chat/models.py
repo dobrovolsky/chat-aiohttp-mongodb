@@ -1,10 +1,14 @@
-from typing import List
+import uuid
 
-from bson import ObjectId
+import base64
+
+from typing import List
 
 from chat.Exceptions import RoomValidationError, RoomDoesNotExists, MessageValidationError
 from chat.schemas import RoomSchema, MessageSchema
 from common.models import BaseModel
+from common.utils import bind_media_url
+from config import MEDIA_DIR
 from user.utils import get_room_collection, get_message_collection
 
 room_collection = get_room_collection()
@@ -64,6 +68,7 @@ class Room(BaseModel):
     async def get_messages(self) -> List['Message']:
         return await Message.get_messages(self._id)
 
+
 class Message(BaseModel):
     """Message for manipulation in code"""
     schema = MessageSchema()
@@ -73,10 +78,16 @@ class Message(BaseModel):
         ('from_user_id', None),
         ('from_user_first_name', None),
         ('text', None),
+        ('file', None),
         ('display_to', []),
         ('need_read', []),
         ('created', BaseModel.default_current_time),
     )
+
+    def bind_media_url(self) -> dict:
+        if hasattr(self, 'file') and self.file:
+            self.file = bind_media_url(self.file)
+        return super().loads()
 
     async def save(self) -> None:
         """save instance to db"""
@@ -93,10 +104,9 @@ class Message(BaseModel):
             self._id = result.inserted_id
 
     @classmethod
-    async def add_message(cls, room_id, user, text):
-        room = await Room.get_room(_id=ObjectId(room_id))
+    async def add_message(cls, room, user, text):
         data = {
-            'room_id': room_id,
+            'room_id': room.id,
             'from_user_id': user.id,
             'from_user_first_name': user.first_name,
             'display_to': room.members[:],
@@ -106,6 +116,7 @@ class Message(BaseModel):
         message = cls(**data)
         message.is_valid()
         await message.save()
+        message.bind_media_url()
         return message
 
     @classmethod
@@ -114,7 +125,9 @@ class Message(BaseModel):
         schema = MessageSchema()
         async for document in message_collection.find({'room_id': room_id}):
             document['_id'] = str(document['_id'])
-            messages.append(cls(**schema.load(document).data))
+            instance = cls(**schema.load(document).data)
+            instance.bind_media_url()
+            messages.append(instance)
         return messages
 
     @classmethod
@@ -136,3 +149,25 @@ class Message(BaseModel):
         async for document in query:
             result = document['count']
         return result
+
+    @classmethod
+    async def add_file(cls, room, user, file_data):
+        decoded_file = base64.b64decode(file_data['content'])
+        name = uuid.uuid4().hex[:8] + '.' + file_data['file_name'].split('.')[-1]
+        file_path = MEDIA_DIR + '/' + name
+        with open(file_path, 'wb') as f:
+            f.write(decoded_file)
+        data = {
+            'room_id': room.id,
+            'from_user_id': user.id,
+            'from_user_first_name': user.first_name,
+            'display_to': room.members[:],
+            'need_read': room.members[:].remove(user.id) or [],
+            'file': name,
+            'text': file_data['file_name']
+        }
+        message = cls(**data)
+        message.is_valid()
+        await message.save()
+        message.bind_media_url()
+        return message
