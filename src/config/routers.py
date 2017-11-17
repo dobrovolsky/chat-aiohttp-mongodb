@@ -19,6 +19,7 @@ def setup_routes(app: Application):
     for route in routers:
         app.router.add_route(route[0], route[1], route[2], name=route[3])
     app.router.add_static('/static', settings.STATIC_DIR, name='static')
+    app.router.add_static(settings.MEDIA_URL, settings.MEDIA_DIR, name='media')
     app['static_root_url'] = '/static'
 
 

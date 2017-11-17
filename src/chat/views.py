@@ -45,8 +45,18 @@ class ChatSocketView(web.View):
                 'need_read_count': await self.request.user.get_message_need_count()
             }, [self.request.app['ws_connections'][self.request.user.id]]
         elif action == 'add_message':
-            message = await Message.add_message(room_id=msg['room_id'], user=self.request.user, text=msg['text'])
             room = await Room.get_room(_id=ObjectId(msg['room_id']))
+            message = await Message.add_message(room=room, user=self.request.user, text=msg['text'])
+            data = {
+                'event': 'new_message',
+                'data': message.loads(),
+                'need_read_count': await self.request.user.get_message_need_count()
+            }
+            return data, (self.request.app['ws_connections'].get(user_id)
+                for user_id in room.members if self.request.app['ws_connections'].get(user_id))
+        elif action == 'add_file':
+            room = await Room.get_room(_id=ObjectId(msg['room_id']))
+            message = await Message.add_file(room=room, user=self.request.user, file_data=msg['file_data'])
             data = {
                 'event': 'new_message',
                 'data': message.loads(),
@@ -57,8 +67,6 @@ class ChatSocketView(web.View):
 
         else:
             raise Exception('not allowed action')
-
-
 
     async def _handle_disconnection(self, resp):
         del self.request.app['ws_connections'][self.request.user.id]
@@ -110,6 +118,7 @@ class CreateChatView(web.View):
             await room.save()
             return web.HTTPFound(f'/chat/{room.id}')
         return web.json_response(data=room.errors, status=400)
+
 
 class ChatView(web.View):
     """View for get chat page"""

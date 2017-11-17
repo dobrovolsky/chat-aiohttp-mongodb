@@ -15,6 +15,7 @@ from config import setup_routes, settings
 asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 loop = asyncio.get_event_loop()
 
+
 async def get_app():
     redis_pool = await create_pool((settings.REDIS_HOST, settings.REDIS_PORT), db=settings.REDIS_DB)
     web_app = web.Application(debug=settings.DEBUG, middlewares=[session_middleware(RedisStorage(redis_pool)),
@@ -24,6 +25,7 @@ async def get_app():
     setup_routes(web_app)
     aiohttp_jinja2.setup(web_app, loader=jinja2.FileSystemLoader(settings.TEMPLATES_DIR))
     return web_app
+
 
 async def on_shutdown(app):
     for user_id, ws in app['ws_connections'].items():

@@ -1,6 +1,8 @@
 from aiohttp import WSMsgType
 from marshmallow import ValidationError
 
+from config import settings
+
 
 def basic_string_validation(value, min_length=None, max_length=None, blank=False):
     """Provide basic validation for string"""
@@ -34,3 +36,10 @@ def multi_dict_to_dict(data):
         else:
             data2[key] = value
     return data2
+
+
+def bind_media_url(file_name):
+    connection_type = 'http://'
+    if settings.IS_SECURE:
+        connection_type = 'https://'
+    return f'{connection_type}{settings.SITE_HOST}:{settings.SITE_PORT}{settings.MEDIA_URL}{file_name}'

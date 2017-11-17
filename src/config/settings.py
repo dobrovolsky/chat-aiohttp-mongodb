@@ -17,6 +17,7 @@ else:
 DEBUG = env.bool('DEBUG', default=False)
 SECRET_KEY = env.str('SECRET_KEY', default='')
 
+IS_SECURE = env.bool('IS_SECURE', default=False)
 SITE_HOST = env.str('SITE_HOST', default='localhost')
 SITE_PORT = env.int('SITE_PORT', default=8888)
 
@@ -32,7 +33,10 @@ MONGO_ROOM_COLLECTION = env.str('MONGO_ROOM_COLLECTION', default='rooms')
 _base_dir = pathlib.Path(__file__).parent.parent
 BASE_DIR = str(_base_dir)
 STATIC_DIR = str(_base_dir.joinpath(env.str('STATIC', default='static')))
+MEDIA_DIR = str(_base_dir.joinpath(env.str('MEDIA', default='media')))
 TEMPLATES_DIR = str(_base_dir.joinpath(env.str('TEMPLATES', default='templates')))
+
+MEDIA_URL = '/media/'
 
 REDIS_HOST = env.str('REDIS_HOST', default='localhost')
 REDIS_PORT = env.int('REDIS_PORT', default=6379)
