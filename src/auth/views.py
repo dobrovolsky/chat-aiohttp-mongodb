@@ -56,3 +56,9 @@ class SignInView(web.View):
         else:
             return web.json_response(data=user_data.errors, status=400)
 
+
+class IndexView(web.View):
+    async def get(self):
+        if not self.request.user:
+            return web.HTTPFound(self.request.app.router['signup'].url_for())
+        return web.HTTPFound(self.request.app.router['chat_list'].url_for())
