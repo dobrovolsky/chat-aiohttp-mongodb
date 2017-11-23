@@ -2,6 +2,7 @@ import aiohttp_jinja2
 from aiohttp import web
 from aiohttp_session import get_session
 from auth.validators import UserSingUpValidator, UserSingInValidator
+from common.view_mixins import LoginRequiredMixin
 from user.Exceptions import UserDoesNotExists
 from user.models import User
 
@@ -35,7 +36,9 @@ class SignInView(web.View):
     @aiohttp_jinja2.template('login.html')
     async def get(self):
         """render template with sign in form"""
-        context = {}
+        context = {
+            'request': self.request
+        }
         if self.request.user:
             return web.HTTPFound('/chat-list')
         return context
@@ -57,8 +60,13 @@ class SignInView(web.View):
             return web.json_response(data=user_data.errors, status=400)
 
 
-class IndexView(web.View):
+class IndexView(LoginRequiredMixin, web.View):
     async def get(self):
-        if not self.request.user:
-            return web.HTTPFound(self.request.app.router['signup'].url_for())
         return web.HTTPFound(self.request.app.router['chat_list'].url_for())
+
+
+class SignOut(LoginRequiredMixin, web.View):
+    async def get(self):
+        session = await get_session(self.request)
+        session.invalidate()
+        return web.HTTPFound(self.get_login_url())

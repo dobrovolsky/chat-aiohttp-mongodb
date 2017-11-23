@@ -6,12 +6,13 @@ from bson import ObjectId
 from aiohttp.web_ws import WebSocketResponse
 
 from common.utils import validate_message, multi_dict_to_dict
+from common.view_mixins import LoginRequiredMixin
 
 logger = logging.getLogger('chat')
 logger.debug = print
 
 
-class ChatSocketView(web.View):
+class ChatSocketView(LoginRequiredMixin, web.View):
     """View for process chat"""
 
     async def get(self):
@@ -84,7 +85,7 @@ class ChatSocketView(web.View):
         return resp, ok
 
 
-class ChatListView(web.View):
+class ChatListView(LoginRequiredMixin, web.View):
     """View for list of chat"""
 
     @aiohttp_jinja2.template('chat_list.html')
@@ -94,10 +95,11 @@ class ChatListView(web.View):
         context = dict()
         context['user'] = self.request.user
         context['chats'] = await Room.get_rooms(self.request.user)
+        context['request'] = self.request
         return context
 
 
-class CreateChatView(web.View):
+class CreateChatView(LoginRequiredMixin, web.View):
     @aiohttp_jinja2.template('start_chat.html')
     async def get(self):
         """show all user's chats"""
@@ -105,6 +107,7 @@ class CreateChatView(web.View):
         context = dict()
         context['user'] = self.request.user
         context['users'] = await User.get_users(**{'_id': {'$ne': ObjectId(self.request.user.id)}})
+        context['request'] = self.request
         return context
 
     async def post(self):
@@ -122,7 +125,7 @@ class CreateChatView(web.View):
         return web.json_response(data=room.errors, status=400)
 
 
-class ChatView(web.View):
+class ChatView(LoginRequiredMixin, web.View):
     """View for get chat page"""
 
     @aiohttp_jinja2.template('chat.html')
@@ -134,4 +137,5 @@ class ChatView(web.View):
         context['user'] = self.request.user
         context['chat'] = await Room.get_room(_id=ObjectId(chat_id))
         context['messages'] = await context['chat'].get_messages()
+        context['request'] = self.request
         return context
