@@ -31,7 +31,7 @@ class ChatSocketView(LoginRequiredMixin, web.View):
                     return resp
             return resp
         except Exception as e:
-            print(e)
+            logger.debug(e)
         finally:
             await self._handle_disconnection(resp)
 
@@ -56,6 +56,18 @@ class ChatSocketView(LoginRequiredMixin, web.View):
             }
             return data, (self.request.app['ws_connections'].get(user_id)
                 for user_id in room.members if self.request.app['ws_connections'].get(user_id))
+        elif action == 'get_rooms':
+            rooms = await Room.get_json_rooms(user=self.request.user)
+            for r in rooms:
+                last_message = await Room.get_last_message(r['_id'])
+                count_unread = await Message.get_message_read_count(user_id=self.request.user.id, room_id=r['_id'])
+                r['last_message'] = last_message.loads()
+                r['read_count'] = count_unread
+            return {
+               'event': 'get_rooms',
+               'data': rooms,
+               'need_read_count': await self.request.user.get_message_need_count()
+            }, [self.request.app['ws_connections'][self.request.user.id]]
         elif action == 'add_file':
             room = await Room.get_room(_id=ObjectId(msg['room_id']))
             message = await Message.add_file(room=room, user=self.request.user, file_data=msg['file_data'])

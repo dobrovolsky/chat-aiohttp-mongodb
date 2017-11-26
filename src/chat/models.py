@@ -2,7 +2,7 @@ import uuid
 
 import base64
 
-from typing import List
+from typing import List, Dict
 
 from chat.Exceptions import RoomValidationError, RoomDoesNotExists, MessageValidationError
 from chat.schemas import RoomSchema, MessageSchema
@@ -50,7 +50,7 @@ class Room(BaseModel):
     async def get_rooms(cls, user) -> List['Room']:
         rooms = []
         schema = RoomSchema()
-        async for document in room_collection.find({'members': user._id}):
+        async for document in room_collection.find({'members': user.id}):
             document['_id'] = str(document['_id'])
             rooms.append(cls(**schema.load(document).data))
         return rooms
@@ -67,6 +67,21 @@ class Room(BaseModel):
 
     async def get_messages(self) -> List['Message']:
         return await Message.get_messages(self._id)
+
+    @classmethod
+    async def get_json_rooms(cls, user) -> List[Dict]:
+        data = await cls.get_rooms(user)
+        result = []
+        for room in data:
+            result.append(room.loads())
+        return result
+
+    @staticmethod
+    async def get_last_message(room_id) -> 'Message':
+        schema = MessageSchema()
+        document = await message_collection.find_one({'room_id': room_id}, sort=[('created', -1)])
+        instance = Message(**schema.load(document).data)
+        return instance
 
 
 class Message(BaseModel):
@@ -105,12 +120,14 @@ class Message(BaseModel):
 
     @classmethod
     async def add_message(cls, room, user, text):
+        need_read = room.members[:]
+        need_read.remove(user.id)
         data = {
             'room_id': room.id,
             'from_user_id': user.id,
             'from_user_first_name': user.first_name,
             'display_to': room.members[:],
-            'need_read': room.members[:].remove(user.id) or [],
+            'need_read': need_read,
             'text': text,
         }
         message = cls(**data)
@@ -139,10 +156,13 @@ class Message(BaseModel):
         return result
 
     @staticmethod
-    async def get_message_read_count(user_id) -> int:
+    async def get_message_read_count(user_id, room_id=None) -> int:
         result = 0
+        query_filter = {'need_read': user_id}
+        if room_id:
+            query_filter = {'$and': [query_filter, {'room_id': room_id}]}
         query = message_collection.aggregate([
-                {'$match': {'need_read': user_id}},
+                {'$match': query_filter},
                 {'$group': {'_id': None, 'count': {'$sum': 1}}}
             ]
         )
