@@ -1,4 +1,4 @@
-let form = $('#sing-up-data-id');
+let form = $('#sing-in-data-id');
 form.submit((e) => {
     e.preventDefault();
     $.ajax({

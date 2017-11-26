@@ -40,7 +40,6 @@ submit_file_button.click(() => {
                 'file_name': file.name,
             }
         };
-        console.log(data);
         ws.send(JSON.stringify(data));
         input.val('');
         file_field.val('');
@@ -49,49 +48,36 @@ submit_file_button.click(() => {
 });
 ws.onopen = () => {
     ws.send(JSON.stringify({
-        'action': 'get_messages',
+        'action': 'get_rooms',
         'limit': 100,
         'offset': 0,
-        'room_id': chat_id
     }))
 };
-let _insert_message = (message_user_id, user_name, text, time, file) => {
-    let file_url_string = '';
-    let darker = "";
-    let image_class = "left";
-    let time_class = "right";
-    if (message_user_id == user_id) {
-        darker = "darker";
-        image_class = "right";
-        time_class = "left";
-    }
-    if (file){
-       file_url_string = `<a href="${file}" target="_blank">file</a>`
-    }
+let _insert_message = (room_id, room_name, text, time, read_count) => {
+    let message_container = $('#message-container-id');
     let date = new Date(time * 1000);
     let hours = date.getHours();
     let minutes = "0" + date.getMinutes();
     let seconds = "0" + date.getSeconds();
     let formattedTime = hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
-
-
-    let insert_string = `<div class="message-container ${darker}">
-                            <img src="https://tracker.moodle.org/secure/thumbnail/30912/_thumb_30912.png" alt="${user_name}" class="${image_class}">
-                            <p>${text}</p>
-                            ${file_url_string}
-                            <span class="time-${time_class}">${formattedTime}</span>
-                         </div>`;
+    let insert_string = `<li class="list-group-item">
+                            <a href="/chat/${room_id}">${ room_name }: TEXT: ${text}</a>
+                            <span>${read_count}</span>
+                            <span>${formattedTime}</span>
+                         </li>`;
     message_container.append(insert_string);
 };
 let insert_messages = (data) => {
     data.data.sort((first, second) => {
-        return first > second;
+        return first.created > second.created;
     });
+
     for (let i in data.data) {
-        _insert_message(data.data[i].from_user_id,
-            data.data[i].from_user_first_name,
-            data.data[i].text,
-            data.data[i].created,
-            data.data[i].file);
+        _insert_message(data.data[i]._id,
+            data.data[i].room_name,
+            data.data[i].last_message.text,
+            data.data[i].last_message.created,
+            data.data[i].read_count,
+        );
     }
 };
