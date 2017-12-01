@@ -1,4 +1,4 @@
-let ws = new WebSocket(`ws://${window.location.hostname}/ws/chat`);
+let ws = new WebSocket(`ws://${window.location.hostname}:${window.location.port}/ws/chat`);
 let counter = $('#message-counter-id');
 ws.onmessage = (data) => {
     data = JSON.parse(data.data);
