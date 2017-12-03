@@ -1,8 +1,9 @@
-aiohttp==2.2.5
+aiohttp==2.3.5
 motor==1.1
 uvloop==0.8.1
 envparse==0.2.0
 marshmallow==2.13.6
 aiohttp-jinja2==0.14.0
 Jinja2==2.9.6
-aiohttp_session[aioredis]==1.0.1
+aiohttp_session[aioredis]==2.2.5
+aioredis==1.0.0

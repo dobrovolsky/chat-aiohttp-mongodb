@@ -1,12 +1,29 @@
-let ws = new WebSocket(`ws://${window.location.hostname}:${window.location.port}/ws/chat`);
+let ws = null;
+let connect = () => {
+  ws = new WebSocket(`ws://${window.location.hostname}:${window.location.port}/ws/chat`);
+
+  ws.onmessage = (data) => {
+        data = JSON.parse(data.data);
+        handle_message(data);
+  };
+
+  ws.onclose = () => {
+    console.log('Socket is closed. Reconnect will be attempted in 1 second.', e.reason);
+    setTimeout(() => {
+      connect();
+    }, 1000);
+  };
+
+  ws.onerror = () => {
+    console.error('Socket encountered error: ', err.message, 'Closing socket');
+    ws.close();
+  };
+};
+
+connect();
+
 let counter = $('#message-counter-id');
-ws.onmessage = (data) => {
-    data = JSON.parse(data.data);
-    handle_message(data);
-};
-ws.onclose = (data) => {
-    console.log(data)
-};
+
 let handle_message = (data) => {
     if (data.event == 'get_messages') {
         insert_messages(data);

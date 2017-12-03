@@ -124,7 +124,7 @@ class CreateChatView(LoginRequiredMixin, web.View):
 
     async def post(self):
         """create new chat"""
-        from chat.models import Room
+        from chat.models import Room, Message
         data = multi_dict_to_dict(await self.request.post())
         room = Room(**data)
         if room.is_valid():
@@ -133,6 +133,7 @@ class CreateChatView(LoginRequiredMixin, web.View):
             except AttributeError:
                 room.members = [room.members, self.request.user.id]
             await room.save()
+            await Message.add_message(room=room, user=self.request.user, text='crate new room')
             return web.HTTPFound(f'/chat/{room.id}')
         return web.json_response(data=room.errors, status=400)
 
