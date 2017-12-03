@@ -4,7 +4,7 @@ import base64
 
 from typing import List, Dict
 
-from chat.Exceptions import RoomValidationError, RoomDoesNotExists, MessageValidationError
+from chat.exceptions import RoomValidationError, RoomDoesNotExists, MessageValidationError
 from chat.schemas import RoomSchema, MessageSchema
 from common.models import BaseModel
 from common.utils import bind_media_url

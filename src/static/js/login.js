@@ -11,7 +11,7 @@ form.submit((e) => {
         }
     ).fail(
         (data) => {
-            console.log(data);
+            alert(data.error);
         }
     );
 });

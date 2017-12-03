@@ -15,6 +15,8 @@ class SignUpView(web.View):
     @aiohttp_jinja2.template('sing_up.html')
     async def get(self):
         """render template with sign up form"""
+        if self.request.user:
+            return web.HTTPFound('/chat-list')
         return {}
 
     async def post(self):
