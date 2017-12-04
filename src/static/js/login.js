@@ -11,7 +11,7 @@ form.submit((e) => {
         }
     ).fail(
         (data) => {
-            alert(data.error);
+            alert(data.responseJSON.error);
         }
     );
 });

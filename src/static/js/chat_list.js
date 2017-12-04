@@ -1,51 +1,5 @@
-let chat_id = $('#passed-data').attr('data-room-id');
-let user_id = $('#passed-data').attr('data-user-id');
 let input = $('#text-input-id');
-let file_field = $('#file-field-id');
-let submit_button = $('#submit-button-id');
-let submit_file_button = $('#submit-file-button-id');
-let message_container = $('#message-container-id');
 
-function getBase64(file) {
-    return new Promise((resolve, reject) => {
-        let reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = function () {
-            resolve(reader.result.split(',')[1]);
-        };
-        reader.onerror = function (error) {
-            reject(error);
-        };
-    });
-}
-
-submit_button.click(() => {
-    let text = input.val();
-    let data = {
-        'action': 'add_message',
-        'room_id': chat_id,
-        'text': text
-    };
-    ws.send(JSON.stringify(data));
-    input.val('');
-});
-submit_file_button.click(() => {
-    let file = file_field[0].files[0];
-    getBase64(file).then((base64_data) => {
-        let data = {
-            'action': 'add_file',
-            'room_id': chat_id,
-            'file_data': {
-                'content': base64_data,
-                'file_name': file.name,
-            }
-        };
-        ws.send(JSON.stringify(data));
-        input.val('');
-        file_field.val('');
-    });
-
-});
 ws.onopen = () => {
     ws.send(JSON.stringify({
         'action': 'get_rooms',
@@ -53,6 +7,7 @@ ws.onopen = () => {
         'offset': 0,
     }))
 };
+
 let _insert_message = (room_id, room_name, text, time, read_count) => {
     let message_container = $('#message-container-id');
     let date = new Date(time * 1000);
@@ -72,6 +27,13 @@ let insert_messages = (data) => {
         return first.created > second.created;
     });
 
+    if (!data.data.length){
+        let message_container = $('#message-container-id');
+        let insert_string = `<li class="list-group-item">
+                                <p>There is no chats yet</p>
+                             </li>`;
+        message_container.append(insert_string);
+    }
     for (let i in data.data) {
         _insert_message(data.data[i]._id,
             data.data[i].room_name,
