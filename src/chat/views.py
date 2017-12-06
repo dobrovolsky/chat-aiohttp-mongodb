@@ -5,6 +5,7 @@ from aiohttp import web
 from bson import ObjectId
 from aiohttp.web_ws import WebSocketResponse
 
+from chat.exceptions import RoomDoesNotExists
 from common.utils import validate_message, multi_dict_to_dict
 from common.view_mixins import LoginRequiredMixin
 
@@ -148,7 +149,13 @@ class ChatView(LoginRequiredMixin, web.View):
         chat_id = self.request.match_info['id']
         context = dict()
         context['user'] = self.request.user
-        context['chat'] = await Room.get_room(_id=ObjectId(chat_id))
+        try:
+            context['chat'] = await Room.get_room(_id=ObjectId(chat_id))
+        except RoomDoesNotExists:
+            return web.Response(status=404)
+        else:
+            if not self.request.user.id in context['chat'].members:
+                return web.Response(status=404)
         context['messages'] = await context['chat'].get_messages()
         context['request'] = self.request
         return context
