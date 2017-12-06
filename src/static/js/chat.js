@@ -77,6 +77,7 @@ let _insert_message = (message_user_id, user_name, text, time, file) => {
 
     let insert_string = `<div class="message-container ${darker}">
                             <img src="https://tracker.moodle.org/secure/thumbnail/30912/_thumb_30912.png" alt="${user_name}" class="${image_class}">
+                            <p>${user_name}: </p>
                             <p>${text}</p>
                             ${file_url_string}
                             <span class="time-${time_class}">${formattedTime}</span>
@@ -92,6 +93,7 @@ let insert_messages = (data) => {
             data.data[i].from_user_first_name,
             data.data[i].text,
             data.data[i].created,
-            data.data[i].file);
+            data.data[i].file
+        );
     }
 };
